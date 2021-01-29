@@ -1,8 +1,11 @@
 # Installation of ESP-IDF
 
 Download esp-idf and install.
+
 Configure IDF_PATH
+
 Install openocd
+
 Configure OPENOCD_PATH
 
 
@@ -29,4 +32,27 @@ git remote add origin git@gitlab.groept.be:ee5/freertosdemo.git
 git add .
 git commit -m "Initial commit"
 git push -u origin master
+```
+
+## Configure target
+
+```
+idf.py set-target esp32
+idf.py menuconfig
+```
+## Configure CLion
+
+Install CLion
+
+Open Clion
+
+Open project...
+
+Select freertosdemo directory
+
+
+## Adding a component
+
+```
+idf.py create-component mycomponent -C components/mycomponent
 ```
