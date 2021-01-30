@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "my_config.h"
+#include <stdio.h>
 #include "my_wifi_ap.h"
 
 void app_main(void)

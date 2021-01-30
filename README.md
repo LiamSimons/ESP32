@@ -68,7 +68,10 @@ Select serial port
 
 Baud rate: 115200
 
+## Configure ESP32
 
+Tools / ESP32 menuconfig
+Change parameters in FreeRTOSDemo Configuration
 
 ## Adding a component
 
