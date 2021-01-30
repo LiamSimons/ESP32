@@ -13,3 +13,4 @@ components/**/sdkconfig.old
 .config
 *.o
 *.pyc
+sdkconfig.old

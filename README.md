@@ -50,7 +50,8 @@ Open project...
 
 Select freertosdemo directory
 
-Install plugin ESP32
+Install plugin ESP32 via settings/plugins
+(https://github.com/paoloach/ESP32)
 
 Settings.../CMake/Change debug profile
 CMake Options: -DCMAKE_TOOLCHAIN_FILE=CrossCompiler.cmake
@@ -70,7 +71,9 @@ Baud rate: 115200
 
 ## Configure ESP32
 
-Tools / ESP32 menuconfig
+```
+idf.py menuconfig
+```
 Change parameters in FreeRTOSDemo Configuration
 
 ## Adding a component
