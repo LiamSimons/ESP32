@@ -1,22 +1,23 @@
 menu "FreeRTOSDemo Configuration"
 
     config ESP_WIFI_SSID
-        string "WiFi SSID"
+        string "WiFi SSID for Access Point"
         default "FreeRTOSDemoSSID"
         help
-            SSID (network name) for the example to connect to.
+            SSID (network name) for the AP.
 
     config ESP_WIFI_PASSWORD
-        string "WiFi Password"
+        string "WiFi Password for Access Point"
         default "FreeRTOSDemo"
         help
-            WiFi password (WPA or WPA2) for the example to use.
+            WiFi password (WPA or WPA2) for the AP.
+
     config ESP_WIFI_CHANNEL
         int "WiFi Channel"
         range 1 13
         default 1
         help
-            WiFi channel (network channel) for the example to use.
+            WiFi channel (network channel) for the AP.
 
     config ESP_MAX_STA_CONN
         int "Maximal STA connections"
