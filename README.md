@@ -54,7 +54,7 @@ Install plugin ESP32
 
 Settings.../CMake/Change debug profile
 CMake Options: -DCMAKE_TOOLCHAIN_FILE=CrossCompiler.cmake
-Add environment: IDF_PATH=/home/yuri/esp/esp-idf;PATH=/home/yuri/.espressif/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/bin:/usr/bin:/sbin:/bin:/opt/bin
+Add environment: IDF_PATH=~/esp/esp-idf;PATH=~/.espressif/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/bin:/usr/bin:/sbin:/bin:/opt/bin
 
 Add Run Configuration...
 
