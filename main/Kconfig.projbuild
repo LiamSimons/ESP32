@@ -24,4 +24,11 @@ menu "FreeRTOSDemo Configuration"
         default 4
         help
             Max number of the STA connects to AP.
+
+    config SERVER_PORT
+        int "TCP socket port"
+        range 0 65535
+        default 3333
+        help
+            Local port the TCP server will listen on.
 endmenu
