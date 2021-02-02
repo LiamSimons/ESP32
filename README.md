@@ -8,8 +8,13 @@ Install openocd
 
 Configure OPENOCD_PATH
 
+# Checkout this project from gitlab
 
-# Steps to create this project
+```shell
+git clone https://gitlab.groept.be/ee5/freertosdemo.git
+```
+
+# Steps to create this project from scratch
 
 Create git repository on gitlab.groept.be
 
