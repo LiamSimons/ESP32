@@ -17,15 +17,9 @@ void process_incoming_data(const int sock)
             ESP_LOGI(TAG, "%lld : Received %d bytes: %s", esp_timer_get_time(), len, rx_buffer);
             char data[128];
             memset(data, '\0', sizeof(data));
-            if (strcmp(rx_buffer,"ON")==0){
-//                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-                xSemaphoreGive( xMutex_ON );
-                ESP_LOGI(TAG, "%lld : Mutex_ON processed...", esp_timer_get_time());
-                strncpy(data, "OK", 3);
-                data[2]='\0';
-            }else if (strcmp(rx_buffer,"OFF")==0){
-                xSemaphoreGive( xMutex_OFF );
-                ESP_LOGI(TAG, "%lld : Mutex_OFF processed...", esp_timer_get_time());
+            if (strcmp(rx_buffer,"TOGGLE")==0){
+                xSemaphoreGive(xMutex_TOGGLE );
+                ESP_LOGI(TAG, "%lld : Mutex_TOGGLE processed...", esp_timer_get_time());
                 strncpy(data, "OK", 3);
                 data[2]='\0';
             }
