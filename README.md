@@ -72,6 +72,24 @@ Select serial port
 Baud rate: 115200  
 ```
 
+## Running this project
+
+### Build and Flash
+
+Select the flash Run Configuration and start it.  
+This will first build the project and next search for the ESP32 on /dev/ttyUSB0 (change this in your run configuration if necessary) and flash the elf to your ESP32.  
+
+### Connect WiFi and send data
+
+The ESP32 has now created a WiFi Access Point, connect to this access point with your laptop. Default gateway will be 192.168.4.1  
+Use telnet or netcat to connect to the socket server on port 3333 running on the ESP32 and send a "TOGGLE" command.  
+Use CTRL-D instead of ENTER to send data to the socket. (ENTER would send extra EOL symbols)
+```commandline
+nc 192.168.4.1 3333
+TOGGLE<CTRL-D>
+```
+Press CTRL-C to exit.  
+
 ## Beyond this project
 
 ### CMake
