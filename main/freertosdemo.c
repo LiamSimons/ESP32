@@ -1,16 +1,18 @@
 #include "my_config.h"
 #include <stdio.h>
+#include <esp_vfs_fat.h>
 #include "my_wifi_ap.h"
 #include "my_server.h"
 #include "my_manager.h"
 
 void app_main(void)
 {
-    // Initialize mutexes
-//    UBaseType_t SEM_MAX_COUNT = 2;
-//    UBaseType_t SEM_INITIAL_COUNT = 0;
-    xMutex_ON = xSemaphoreCreateBinary();
-    xMutex_OFF = xSemaphoreCreateBinary ();
+    // Initialize mutex
+    xMutex_TOGGLE = xSemaphoreCreateBinary();
+
+    // Set output pin for LED
+    gpio_set_direction(led_pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(led_pin, 0);
 
     //Initialize NVS to read WiFi configuration (SSID, Password, ...)
     esp_err_t ret = nvs_flash_init();

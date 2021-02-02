@@ -1,3 +1,6 @@
+#ifndef MY_SERVER_H
+#define MY_SERVER_H
+
 #include <string.h>
 #include <sys/param.h>
 #include "freertos/FreeRTOS.h"
@@ -18,3 +21,5 @@
 
 void tcp_server_task(void *pvParameters);
 void process_incoming_data(const int sock);
+
+#endif
