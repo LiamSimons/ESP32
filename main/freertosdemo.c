@@ -4,7 +4,7 @@
 #include "my_wifi_ap.h"
 #include "my_server.h"
 #include "my_manager.h"
-
+int led_level=0;
 void app_main(void)
 {
     // Initialize mutex

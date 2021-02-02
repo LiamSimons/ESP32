@@ -2,7 +2,7 @@
 #include <esp_vfs_fat.h>
 #include "my_config.h"
 #include "my_manager.h"
-
+extern int led_level;
 _Noreturn void led_manager_task(void *pvParameters){
 
     int led_level = 0;
