@@ -16,6 +16,7 @@ Configure OPENOCD_PATH (see below)
 ### Setup environment
 
 ```commandline
+export IDF_PYTHON_ENV_PATH=~/.espressif/python_env/idf4.3_py2.7_env;IDF_PATH=~/tmp/esp-idf;PYTHON=~/.espressif/python_env/idf4.3_py2.7_env/bin/
 export PATH=$PATH:~/.espressif/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/bin
 export OPENOCD_PATH="~/.espressif/tools/openocd-esp32/v0.10.0-esp32-20200709/openocd-esp32"
 cd $IDF_PATH
@@ -77,7 +78,7 @@ Baud rate: 115200
 ### Build and Flash
 
 Setup your hardware, connect a LED on pin 4 (don't forget to add a resistor!).  
-Select the flash Run Configuration and start it.  
+ySelect the flash Run Configuration and start it.  
 This will first build the project and next search for the ESP32 on /dev/ttyUSB0 (change this in your run configuration if necessary) and flash the elf to your ESP32.  
 
 ### Connect WiFi and send data
