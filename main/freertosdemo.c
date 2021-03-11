@@ -4,17 +4,13 @@
 #include "my_wifi_ap.h"
 #include "my_server.h"
 #include "my_manager.h"
+#include <esp_http_client.h>
+
 int led_level=0;
 void app_main(void)
 {
-    // Initialize mutex
-    xMutex_TOGGLE = xSemaphoreCreateBinary();
 
-    // Set output pin for LED
-    gpio_set_direction(led_pin, GPIO_MODE_OUTPUT);
-    gpio_set_level(led_pin, 0);
-
-    //Initialize NVS to read WiFi configuration (SSID, Password, ...)
+    //Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -22,12 +18,9 @@ void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    // Start the WiFi Access Point
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
-    wifi_init_softap();
+    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    wifi_init_sta();
 
-    // Create Tasks for Socket listener and Button event handler
-    xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)NULL, 5, NULL);
-    xTaskCreate(led_manager_task, "led_manager", 4096, (void*)NULL, 5, NULL);
+
 
 }
