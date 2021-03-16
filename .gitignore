@@ -7,10 +7,9 @@ build
 
 # Components Unit Test Apps files
 components/**/build
-components/**/sdkconfig
 components/**/sdkconfig.old
 
-.config
+
 *.o
 *.pyc
 sdkconfig.old
