@@ -1,110 +1,104 @@
-#include "my_config.h"
+/* ESP HTTP Client Example
+
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+*/
 #include "my_server.h"
+#include <string.h>
+#include <stdlib.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "esp_event.h"
+#include "esp_netif.h"
+#include "protocol_examples_common.h"
+#include "esp_tls.h"
 
-void process_incoming_data(const int sock)
+#include "esp_http_client.h"
+
+#define MAX_HTTP_RECV_BUFFER 512
+#define MAX_HTTP_OUTPUT_BUFFER 2048
+static const char *TAG = "HTTP_CLIENT";
+static const char *url_s = "http://a20fire4.studev.groept.be/php_rest_api/api/sensor/create.php";
+static const char *url_m = "http://a20fire4.studev.groept.be/php_rest_api/api/measurement/create.php";
+
+/* Root cert for howsmyssl.com, taken from howsmyssl_com_root_cert.pem
+
+   The PEM file was extracted from the output of this command:
+   openssl s_client -showcerts -connect www.howsmyssl.com:443 </dev/null
+
+   The CA root cert is the last cert given in the chain of certs.
+
+   To embed it in the app binary, the PEM file is named
+   in the component.mk COMPONENT_EMBED_TXTFILES variable.
+*/
+extern const char howsmyssl_com_root_cert_pem_start[] asm("_binary_howsmyssl_com_root_cert_pem_start");
+extern const char howsmyssl_com_root_cert_pem_end[]   asm("_binary_howsmyssl_com_root_cert_pem_end");
+
+esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 {
-    int len;
-    char rx_buffer[128];
+    switch(evt->event_id) {
+        case HTTP_EVENT_ERROR:
+            ESP_LOGI(TAG, "HTTP_EVENT_ERROR");
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
+            break;
+        case HTTP_EVENT_HEADER_SENT:
+            ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
+            break;
+        case HTTP_EVENT_ON_HEADER:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
+            printf("%.*s", evt->data_len, (char*)evt->data);
+            break;
+        case HTTP_EVENT_ON_DATA:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+            if (!esp_http_client_is_chunked_response(evt->client)) {
+                printf("%.*s", evt->data_len, (char*)evt->data);
+            }
 
-    do {
-        len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-        if (len < 0) {
-            ESP_LOGE(TAG, "Error occurred during receiving: errno %d", errno);
-        } else if (len == 0) {
-            ESP_LOGW(TAG, "Connection closed");
-        } else {
-            rx_buffer[len] = 0; // Null-terminate whatever is received and treat it like a string
-            ESP_LOGI(TAG, "%lld : Received %d bytes: %s", esp_timer_get_time(), len, rx_buffer);
-            char data[128];
-            memset(data, '\0', sizeof(data));
-            if (strcmp(rx_buffer,"TOGGLE")==0){
-                xSemaphoreGive(xMutex_TOGGLE );
-                ESP_LOGI(TAG, "%lld : Mutex_TOGGLE processed...", esp_timer_get_time());
-                strncpy(data, "OK", 3);
-                data[2]='\0';
-            }
-            // send() can return less bytes than supplied length.
-            // Walk-around for robust implementation.
-            int to_write = strlen(data);
-            while (to_write > 0) {
-                int written = send(sock, data + (strlen(data) - to_write), to_write, 0);
-                if (written < 0) {
-                    ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                }
-                to_write -= written;
-            }
-        }
-    } while (len > 0);
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+            break;
+    }
+    return ESP_OK;
+}
+esp_http_client_handle_t  http_init_connections()
+{
+    esp_http_client_config_t http_config = {
+            .url = url_m,
+            .transport_type = HTTP_TRANSPORT_OVER_SSL,
+            .event_handler = _http_event_handle,
+
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&http_config);
+    return client;
 }
 
-void tcp_server_task(void *pvParameters)
-{
-    char addr_str[128];
-    int addr_family = AF_INET;
-    int ip_protocol = 0;
-    struct sockaddr_in dest_addr;
+void http_post_request(esp_http_client_handle_t client, int id, double value){
+    char *query = NULL;
+    asprintf(&query,"{\"sensor_type\":\"temp\",\"location\":\"1;1;1\",\"sample_rate\":\"%f\"}",value); //JSON
 
-    struct sockaddr_in *dest_addr_ip4 = (struct sockaddr_in *)&dest_addr;
-    dest_addr_ip4->sin_addr.s_addr = htonl(INADDR_ANY);
-    dest_addr_ip4->sin_family = AF_INET;
-    dest_addr_ip4->sin_port = htons(PORT);
-    ip_protocol = IPPROTO_IP;
+    esp_http_client_set_url(client,url_s);
+    esp_http_client_set_method(client,HTTP_METHOD_POST);
+    esp_http_client_set_header(client,"Content-Type","application/json");
+    esp_http_client_set_post_field(client,query,strlen(query));
 
-    int listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
-    if (listen_sock < 0) {
-        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-        vTaskDelete(NULL);
-        return;
-    }
+    esp_http_client_perform(client);
 
-    int opt = 1;
-    setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    struct linger sl;
-    sl.l_onoff = 1;		/* non-zero value enables linger option in kernel */
-    sl.l_linger = 0;	/* timeout interval in seconds */
-    setsockopt(listen_sock, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl));
-    ESP_LOGI(TAG, "Socket created");
+    free(query);
+}
 
-    int err = bind(listen_sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
-    if (err != 0) {
-        ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
-        ESP_LOGE(TAG, "IPPROTO: %d", addr_family);
-        close(listen_sock);
-        vTaskDelete(NULL);
-    }
-    ESP_LOGI(TAG, "Socket bound, port %d proto %d", PORT, addr_family);
-
-    err = listen(listen_sock, 1);
-    if (err != 0) {
-        ESP_LOGE(TAG, "Error occurred during listen: errno %d", errno);
-        close(listen_sock);
-        vTaskDelete(NULL);
-    }
-
-    while (1) {
-        //ESP_LOGI(TAG, "Socket listening");
-        struct sockaddr_storage source_addr;
-        uint addr_len = sizeof(source_addr);
-        int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
-        if (sock < 0) {
-            ESP_LOGI(TAG, "Socket < 0");
-            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
-            break;
-        }
-
-        // Convert ip address to string
-        if (source_addr.ss_family == PF_INET) {
-            inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr, addr_str, sizeof(addr_str) - 1);
-        }
-        // ESP_LOGI(TAG, "Socket accepted ip address: %s", addr_str);
-
-        //ESP_LOGI(TAG, "Socket do retransmit");
-        process_incoming_data(sock);
-
-        shutdown(sock, 0);
-        close(sock);
-    }
-
-    close(listen_sock);
-    vTaskDelete(NULL);
+void http_close_connection(esp_http_client_handle_t client){
+    vTaskDelay((3000/portTICK_RATE_MS));
+    esp_http_client_cleanup(client);
 }

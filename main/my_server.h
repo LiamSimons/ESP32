@@ -16,10 +16,12 @@
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
+#include "esp_http_client.h"
 
-#define PORT CONFIG_SERVER_PORT
+esp_err_t _http_event_handle(esp_http_client_event_t *evt);
+esp_http_client_handle_t  http_init_connections();
+void http_post_request(esp_http_client_handle_t client, int id, double value);
+void http_close_connection(esp_http_client_handle_t client);
 
-void tcp_server_task(void *pvParameters);
-void process_incoming_data(const int sock);
 
 #endif
